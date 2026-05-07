@@ -1,3 +1,5 @@
 {
-  "feature_directory": "specs/001-vtex-product-feed-mcp"
+  "feature_directory": "specs/001-vtex-product-feed-mcp",
+  "feature_spec": "specs/001-vtex-product-feed-mcp/spec.md",
+  "impl_plan": "specs/001-vtex-product-feed-mcp/plan.md"
 }
