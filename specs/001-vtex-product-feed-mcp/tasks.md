@@ -25,16 +25,16 @@
 
 **Goal:** Initialise the repository, install dependencies, and wire local infrastructure.
 
-- [ ] T001 Initialise TypeScript project: `package.json`, `tsconfig.json`, `src/` directory in repo root
-- [ ] T002 Install runtime dependencies: `@modelcontextprotocol/sdk`, `@aws-sdk/client-dynamodb`, `@aws-sdk/client-sqs`, `ioredis`, `zod`, `express`, `dotenv`
-- [ ] T003 Install dev dependencies: `typescript`, `ts-node`, `@types/node`, `@types/express`, `jest`, `ts-jest`, `supertest`
-- [ ] T004 Create `docker-compose.yml` with services: `dynamodb-local` (port 8000), `redis` (port 6379), `localstack` for SQS (port 4566)
-- [ ] T005 Create `.env.example` with all variables from `specs/001-vtex-product-feed-mcp/quickstart.md` env section
-- [ ] T006 Create `src/config/env.ts` — load and validate env vars using `zod`; throw on missing required values
-- [ ] T007 [P] Create `src/config/aws.ts` — initialise DynamoDB and SQS clients from env; support `DYNAMODB_ENDPOINT` and `AWS_ENDPOINT` overrides for local dev
-- [ ] T008 [P] Create `src/config/redis.ts` — initialise `ioredis` client from `REDIS_URL`; export singleton
-- [ ] T009 Create `scripts/db-bootstrap.ts` — create `vtex-product-feed` main table with GSI-1 and GSI-2, and `vtex-channel-config` table (schema from `specs/001-vtex-product-feed-mcp/data-model.md`)
-- [ ] T010 Add `yarn db:bootstrap`, `yarn dev`, `yarn build`, `yarn test` scripts to `package.json`
+- [x] T001 Initialise TypeScript project: `package.json`, `tsconfig.json`, `src/` directory in repo root
+- [x] T002 Install runtime dependencies: `@modelcontextprotocol/sdk`, `@aws-sdk/client-dynamodb`, `@aws-sdk/client-sqs`, `ioredis`, `zod`, `express`, `dotenv`
+- [x] T003 Install dev dependencies: `typescript`, `ts-node`, `@types/node`, `@types/express`, `jest`, `ts-jest`, `supertest`
+- [x] T004 Create `docker-compose.yml` with services: `dynamodb-local` (port 8000), `redis` (port 6379), `localstack` for SQS (port 4566)
+- [x] T005 Create `.env.example` with all variables from `specs/001-vtex-product-feed-mcp/quickstart.md` env section
+- [x] T006 Create `src/config/env.ts` — load and validate env vars using `zod`; throw on missing required values
+- [x] T007 [P] Create `src/config/aws.ts` — initialise DynamoDB and SQS clients from env; support `DYNAMODB_ENDPOINT` and `AWS_ENDPOINT` overrides for local dev
+- [x] T008 [P] Create `src/config/redis.ts` — initialise `ioredis` client from `REDIS_URL`; export singleton
+- [x] T009 Create `scripts/db-bootstrap.ts` — create `vtex-product-feed` main table with GSI-1 and GSI-2, and `vtex-channel-config` table (schema from `specs/001-vtex-product-feed-mcp/data-model.md`)
+- [x] T010 Add `yarn db:bootstrap`, `yarn dev`, `yarn build`, `yarn test` scripts to `package.json`
 
 ---
 
@@ -42,19 +42,19 @@
 
 **Goal:** Shared clients and middleware used by all user stories. Must be complete before Phase 3.
 
-- [ ] T011 Create `src/clients/vtex-catalog.ts` — typed wrapper for `GET /api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?an={accountName}`; includes `AppKey`/`AppToken` auth headers
-- [ ] T012 [P] Create `src/clients/vtex-simulation.ts` — typed wrapper for `POST /api/checkout/pub/orderForms/simulation`; accepts `(skuId, salesChannel, accountName, country, postalCode)`; returns raw simulation response
-- [ ] T013 [P] Create `src/clients/vtex-bridge.ts` — typed wrapper for writing VTEX Bridge documents using the 7-field schema from `specs/001-vtex-product-feed-mcp/spec.md` FR-038
-- [ ] T014 Create `src/middleware/vtex-auth.ts` — Express middleware that validates `X-VTEX-API-AppKey` + `X-VTEX-API-AppToken` headers; returns `403` if absent or invalid
-- [ ] T015 [P] Create `src/store/feed-state.ts` — DynamoDB repository for `FeedState` records: `getByKey(accountName, channelId, skuId)`, `upsert(record)`, key pattern `ACCT#{accountName}#CHAN#{channelId}` / `SKU#{skuId}`
-- [ ] T016 [P] Create `src/store/sync-event.ts` — DynamoDB repository for `SyncEvent` records: `write(event)`, `queryHistory(accountName, channelId, skuId, since?, limit?)`, TTL = 90 days; SK pattern `SYNC#{iso8601}#{skuId}`
-- [ ] T017 [P] Create `src/store/offer-issue.ts` — DynamoDB repository for `OfferIssue` records: `create(issue)`, `resolve(issueId)`, `listByChannel(accountName, channelId, filters, cursor, limit)` using GSI-1; TTL set 30d after `resolvedAt`
-- [ ] T018 Create `src/cache/redis-dedup.ts` — `acquireDedup(accountName, skuId, eventType, ttlSeconds): Promise<boolean>` using `SET NX EX`; returns `true` if slot acquired
-- [ ] T019 [P] Create `src/cache/sku-enrichment.ts` — `get(accountName, skuId): CachedSku | null`, `set(accountName, skuId, data, ttlSeconds)` using `ioredis`
-- [ ] T020 [P] Create `src/cache/mapping-cache.ts` — `get(accountName, channelId, vtexCategoryId)`, `set(accountName, channelId, vtexCategoryId, mapping, ttlSeconds)`, `invalidate(accountName, channelId)` using Redis Hash
-- [ ] T021 Create `src/types/index.ts` — export all TypeScript interfaces from `specs/001-vtex-product-feed-mcp/data-model.md`: `ChannelConfig`, `ProductFeed`, `FeedState`, `SyncEvent`, `OfferIssue`, `DispatchResult`, `MappingResult`, `AvailabilityResult`, `PriceResult`, `InventoryResult`
-- [ ] T022 Create `src/sqs/client.ts` — typed SQS helpers: `enqueue(queueUrl, body)`, `getQueueUrl(accountName, eventType)` returning `vtex-feed-{accountName}-{eventType}`
-- [ ] T023 Create `src/sqs/bootstrap-queues.ts` — ensure main queue + DLQ pair exist for a given `(accountName, eventType)`; idempotent (uses `CreateQueue` with `GetQueueAttributes` guard)
+- [x] T011 Create `src/clients/vtex-catalog.ts` — typed wrapper for `GET /api/catalog_system/pvt/sku/stockkeepingunitbyid/{skuId}?an={accountName}`; includes `AppKey`/`AppToken` auth headers
+- [x] T012 [P] Create `src/clients/vtex-simulation.ts` — typed wrapper for `POST /api/checkout/pub/orderForms/simulation`; accepts `(skuId, salesChannel, accountName, country, postalCode)`; returns raw simulation response
+- [x] T013 [P] Create `src/clients/vtex-bridge.ts` — typed wrapper for writing VTEX Bridge documents using the 7-field schema from `specs/001-vtex-product-feed-mcp/spec.md` FR-038
+- [x] T014 Create `src/middleware/vtex-auth.ts` — Express middleware that validates `X-VTEX-API-AppKey` + `X-VTEX-API-AppToken` headers; returns `403` if absent or invalid
+- [x] T015 [P] Create `src/store/feed-state.ts` — DynamoDB repository for `FeedState` records: `getByKey(accountName, channelId, skuId)`, `upsert(record)`, key pattern `ACCT#{accountName}#CHAN#{channelId}` / `SKU#{skuId}`
+- [x] T016 [P] Create `src/store/sync-event.ts` — DynamoDB repository for `SyncEvent` records: `write(event)`, `queryHistory(accountName, channelId, skuId, since?, limit?)`, TTL = 90 days; SK pattern `SYNC#{iso8601}#{skuId}`
+- [x] T017 [P] Create `src/store/offer-issue.ts` — DynamoDB repository for `OfferIssue` records: `create(issue)`, `resolve(issueId)`, `listByChannel(accountName, channelId, filters, cursor, limit)` using GSI-1; TTL set 30d after `resolvedAt`
+- [x] T018 Create `src/cache/redis-dedup.ts` — `acquireDedup(accountName, skuId, eventType, ttlSeconds): Promise<boolean>` using `SET NX EX`; returns `true` if slot acquired
+- [x] T019 [P] Create `src/cache/sku-enrichment.ts` — `get(accountName, skuId): CachedSku | null`, `set(accountName, skuId, data, ttlSeconds)` using `ioredis`
+- [x] T020 [P] Create `src/cache/mapping-cache.ts` — `get(accountName, channelId, vtexCategoryId)`, `set(accountName, channelId, vtexCategoryId, mapping, ttlSeconds)`, `invalidate(accountName, channelId)` using Redis Hash
+- [x] T021 Create `src/types/index.ts` — export all TypeScript interfaces from `specs/001-vtex-product-feed-mcp/data-model.md`: `ChannelConfig`, `ProductFeed`, `FeedState`, `SyncEvent`, `OfferIssue`, `DispatchResult`, `MappingResult`, `AvailabilityResult`, `PriceResult`, `InventoryResult`
+- [x] T022 Create `src/sqs/client.ts` — typed SQS helpers: `enqueue(queueUrl, body)`, `getQueueUrl(accountName, eventType)` returning `vtex-feed-{accountName}-{eventType}`
+- [x] T023 Create `src/sqs/bootstrap-queues.ts` — ensure main queue + DLQ pair exist for a given `(accountName, eventType)`; idempotent (uses `CreateQueue` with `GetQueueAttributes` guard)
 
 ---
 
@@ -64,12 +64,12 @@
 
 **Independent test:** `POST /channels` with valid payload returns `201`; second `POST /channels` for same `channelId` returns `409`; channel with `active: false` is excluded from event routing.
 
-- [ ] T024 [US4] Create `src/channels/channel-config.repository.ts` — DynamoDB CRUD for `vtex-channel-config` table: `create`, `getById`, `update`, `list(accountName)`
-- [ ] T025 [US4] Create `src/channels/channel-config.validator.ts` — `zod` schema enforcing all required fields from spec FR-001: `channelId`, `connectorType`, `accountName`, `salesChannel`, `tradePolicy`, `country`, `representativePostalCode`, `currency`, `dedupTtlSeconds`, `minimumStock`, `maxRetries`, `dispatchEndpoint`, `active`
-- [ ] T026 [US4] Create `src/channels/channel-config.service.ts` — `register(payload)`: validate → check duplicate `channelId` (409) → write to DynamoDB → bootstrap SQS queues via `bootstrap-queues.ts`; `getById(channelId)`; `update(channelId, patch)`: re-validate required fields on activation
-- [ ] T027 [US4] Create `src/channels/channel-config.router.ts` — Express router: `POST /channels`, `GET /channels/:channelId`, `PUT /channels/:channelId`; apply `vtex-auth` middleware to all routes
-- [ ] T028 [US4] Add `POST /channels` validation: reject if `country` or `representativePostalCode` is absent when `active: true` (spec FR-002)
-- [ ] T029 [US4] Wire `channel-config.router.ts` into main Express app at `src/app.ts`
+- [x] T024 [US4] Create `src/channels/channel-config.repository.ts` — DynamoDB CRUD for `vtex-channel-config` table: `create`, `getById`, `update`, `list(accountName)`
+- [x] T025 [US4] Create `src/channels/channel-config.validator.ts` — `zod` schema enforcing all required fields from spec FR-001: `channelId`, `connectorType`, `accountName`, `salesChannel`, `tradePolicy`, `country`, `representativePostalCode`, `currency`, `dedupTtlSeconds`, `minimumStock`, `maxRetries`, `dispatchEndpoint`, `active`
+- [x] T026 [US4] Create `src/channels/channel-config.service.ts` — `register(payload)`: validate → check duplicate `channelId` (409) → write to DynamoDB → bootstrap SQS queues via `bootstrap-queues.ts`; `getById(channelId)`; `update(channelId, patch)`: re-validate required fields on activation
+- [x] T027 [US4] Create `src/channels/channel-config.router.ts` — Express router: `POST /channels`, `GET /channels/:channelId`, `PUT /channels/:channelId`; apply `vtex-auth` middleware to all routes
+- [x] T028 [US4] Add `POST /channels` validation: reject if `country` or `representativePostalCode` is absent when `active: true` (spec FR-002)
+- [x] T029 [US4] Wire `channel-config.router.ts` into main Express app at `src/app.ts`
 
 ---
 
@@ -79,11 +79,11 @@
 
 **Independent test:** POST to `/internal/broadcaster/{accountName}` with a stock event → message in `vtex-feed-{accountName}-stock` queue; second identical POST within TTL → no new SQS message (dedup).
 
-- [ ] T030 [US5] Create `src/broadcaster/event.types.ts` — TypeScript types for VTEX Broadcaster payload (from `specs/001-vtex-product-feed-mcp/contracts/broadcaster-webhook.md`): `BroadcasterEvent`, `EventDomain`, `EventType`
-- [ ] T031 [US5] Create `src/broadcaster/event-router.ts` — `routeEvent(event): EventType` mapping `Domain` → `catalog | price | stock` per routing table in `broadcaster-webhook.md`
-- [ ] T032 [US5] Create `src/broadcaster/ingestion.handler.ts` — `handleEvent(accountName, event)`: (1) look up active channels for `accountName`, (2) apply `acquireDedup`, (3) `enqueue` to SQS, (4) return immediately; always `200`
-- [ ] T033 [US5] Create `src/broadcaster/ingestion.router.ts` — `POST /internal/broadcaster/:accountName`; no auth (Broadcaster cannot send tokens); validate payload shape with `zod`
-- [ ] T034 [US5] Wire `ingestion.router.ts` into `src/app.ts`
+- [x] T030 [US5] Create `src/broadcaster/event.types.ts` — TypeScript types for VTEX Broadcaster payload (from `specs/001-vtex-product-feed-mcp/contracts/broadcaster-webhook.md`): `BroadcasterEvent`, `EventDomain`, `EventType`
+- [x] T031 [US5] Create `src/broadcaster/event-router.ts` — `routeEvent(event): EventType` mapping `Domain` → `catalog | price | stock` per routing table in `broadcaster-webhook.md`
+- [x] T032 [US5] Create `src/broadcaster/ingestion.handler.ts` — `handleEvent(accountName, event)`: (1) look up active channels for `accountName`, (2) apply `acquireDedup`, (3) `enqueue` to SQS, (4) return immediately; always `200`
+- [x] T033 [US5] Create `src/broadcaster/ingestion.router.ts` — `POST /internal/broadcaster/:accountName`; no auth (Broadcaster cannot send tokens); validate payload shape with `zod`
+- [x] T034 [US5] Wire `ingestion.router.ts` into `src/app.ts`
 
 ---
 
@@ -93,20 +93,20 @@
 
 **Independent test:** Enqueue a stock event for a registered test channel → after processing: `FeedState` in DynamoDB has `syncStatus: synced`; Bridge document written; `SyncEvent` record present with 90d TTL.
 
-- [ ] T035 [US5] Create `src/pipeline/step1-eligibility.ts` — fetch SKU from `vtex-catalog` client (or enrichment cache); check `IsActive`, `IsProductActive`, `SalesChannels.includes(salesChannel)`; return `{ eligible: boolean }`
-- [ ] T036 [US5] Create `src/pipeline/step2-enrichment.ts` — fetch full SKU from `vtex-catalog` client; write to `sku-enrichment` cache; on API failure generate `CONTENT_FETCH_ERROR` OfferIssue and throw `RetryableError`
-- [ ] T037 [US5] Create `src/pipeline/step3-normalization.ts` — `normalizeSku(rawSku)`: strip HTML, extract EAN, normalize dimensions (both `Dimension` + `RealDimension`), select main image, compute `contentVersion` SHA-256
-- [ ] T038 [US5] Create `src/pipeline/step4-mapping.ts` — read from `mapping-cache`; if cache miss for `vtexCategoryId` → create `MISSING_MAPPING` OfferIssue → throw `PipelineHaltError`; set `mappingStatus`
-- [ ] T039 [US5] Create `src/pipeline/step5-price.ts` — call `vtex-simulation` client with channel config `(country, postalCode, salesChannel)`; extract `sellingPrice`, `listPrice`, `basePrice`; on `sellingPrice = 0` → create `ZERO_PRICE` issue + `PipelineHaltError`; on API error → `RetryableError`; cache result in Redis
-- [ ] T040 [US5] Create `src/pipeline/step6-inventory.ts` — extract `sellableQuantity` from same simulation response (`sum of logisticsInfo[*].deliveryChannels["delivery"].stockBalance`); apply `minimumStock` threshold
-- [ ] T041 [US5] Create `src/pipeline/step7-availability.ts` — compute `isAvailable = catalogEligibility AND priceEligibility AND inventoryEligibility`; set `unavailableReason` enum
-- [ ] T042 [US5] Create `src/pipeline/step8-assembly.ts` — merge all resolver outputs; compute `feedVersion` SHA-256 of `(contentVersion + sellingPrice + sellableQuantity + isAvailable)`; if matches last dispatched version → set `syncStatus: skipped`, skip dispatch
-- [ ] T043 [US5] Create `src/pipeline/step9-dispatch.ts` — `POST {dispatchEndpoint}` with `ProductFeed` payload (contract from `specs/001-vtex-product-feed-mcp/contracts/connector-api.md`); set `syncStatus: in_flight` before call; handle `DispatchResult.status: retry | error | success`; exponential backoff: 1s, 5s, 30s, 5min, 30min
-- [ ] T044 [US5] Create `src/pipeline/step10-state-write.ts` — write `FeedState` to DynamoDB; write `SyncEvent` with TTL = 90d; write Bridge document via `vtex-bridge` client; emit `feed.sync.*` metrics
-- [ ] T045 [US5] Create `src/pipeline/errors.ts` — `RetryableError`, `PipelineHaltError`, `MaxRetriesExhaustedError` with structured fields for issue creation
-- [ ] T046 [US5] Create `src/pipeline/orchestrator.ts` — compose steps 1–10 in sequence; catch `PipelineHaltError` (write issue, ack message, no retry); catch `RetryableError` (re-enqueue with backoff); catch `MaxRetriesExhaustedError` (move to DLQ, write `SYNC_EXHAUSTED` issue)
-- [ ] T047 [US5] Create `src/sqs/consumer.ts` — SQS long-poll consumer loop; receive messages from all active channel queues; call `orchestrator.run(event)`; ack on success or halt; nack/visibility-timeout on retry
-- [ ] T048 [US5] Wire `sqs/consumer.ts` startup into `src/index.ts`; start consumer alongside Express server
+- [x] T035 [US5] Create `src/pipeline/step1-eligibility.ts` — fetch SKU from `vtex-catalog` client (or enrichment cache); check `IsActive`, `IsProductActive`, `SalesChannels.includes(salesChannel)`; return `{ eligible: boolean }`
+- [x] T036 [US5] Create `src/pipeline/step2-enrichment.ts` — fetch full SKU from `vtex-catalog` client; write to `sku-enrichment` cache; on API failure generate `CONTENT_FETCH_ERROR` OfferIssue and throw `RetryableError`
+- [x] T037 [US5] Create `src/pipeline/step3-normalization.ts` — `normalizeSku(rawSku)`: strip HTML, extract EAN, normalize dimensions (both `Dimension` + `RealDimension`), select main image, compute `contentVersion` SHA-256
+- [x] T038 [US5] Create `src/pipeline/step4-mapping.ts` — read from `mapping-cache`; if cache miss for `vtexCategoryId` → create `MISSING_MAPPING` OfferIssue → throw `PipelineHaltError`; set `mappingStatus`
+- [x] T039 [US5] Create `src/pipeline/step5-price.ts` — call `vtex-simulation` client with channel config `(country, postalCode, salesChannel)`; extract `sellingPrice`, `listPrice`, `basePrice`; on `sellingPrice = 0` → create `ZERO_PRICE` issue + `PipelineHaltError`; on API error → `RetryableError`; cache result in Redis
+- [x] T040 [US5] Create `src/pipeline/step6-inventory.ts` — extract `sellableQuantity` from same simulation response (`sum of logisticsInfo[*].deliveryChannels["delivery"].stockBalance`); apply `minimumStock` threshold
+- [x] T041 [US5] Create `src/pipeline/step7-availability.ts` — compute `isAvailable = catalogEligibility AND priceEligibility AND inventoryEligibility`; set `unavailableReason` enum
+- [x] T042 [US5] Create `src/pipeline/step8-assembly.ts` — merge all resolver outputs; compute `feedVersion` SHA-256 of `(contentVersion + sellingPrice + sellableQuantity + isAvailable)`; if matches last dispatched version → set `syncStatus: skipped`, skip dispatch
+- [x] T043 [US5] Create `src/pipeline/step9-dispatch.ts` — `POST {dispatchEndpoint}` with `ProductFeed` payload (contract from `specs/001-vtex-product-feed-mcp/contracts/connector-api.md`); set `syncStatus: in_flight` before call; handle `DispatchResult.status: retry | error | success`; exponential backoff: 1s, 5s, 30s, 5min, 30min
+- [x] T044 [US5] Create `src/pipeline/step10-state-write.ts` — write `FeedState` to DynamoDB; write `SyncEvent` with TTL = 90d; write Bridge document via `vtex-bridge` client; emit `feed.sync.*` metrics
+- [x] T045 [US5] Create `src/pipeline/errors.ts` — `RetryableError`, `PipelineHaltError`, `MaxRetriesExhaustedError` with structured fields for issue creation
+- [x] T046 [US5] Create `src/pipeline/orchestrator.ts` — compose steps 1–10 in sequence; catch `PipelineHaltError` (write issue, ack message, no retry); catch `RetryableError` (re-enqueue with backoff); catch `MaxRetriesExhaustedError` (move to DLQ, write `SYNC_EXHAUSTED` issue)
+- [x] T047 [US5] Create `src/sqs/consumer.ts` — SQS long-poll consumer loop; receive messages from all active channel queues; call `orchestrator.run(event)`; ack on success or halt; nack/visibility-timeout on retry
+- [x] T048 [US5] Wire `sqs/consumer.ts` startup into `src/index.ts`; start consumer alongside Express server
 
 ---
 
@@ -116,10 +116,10 @@
 
 **Independent test:** Call `tools/call` with `getProductFeedState` for a known `(skuId, channelId, accountName)` → response includes `productFeed`, `dataFreshness.isStale`, and `priceAgeSeconds`; call for unknown key → structured `404` error response with `isError: true`.
 
-- [ ] T049 [US2] Create `src/mcp/server.ts` — initialise `@modelcontextprotocol/sdk` MCP server with Streamable HTTP transport; bind to `MCP_PORT`; apply VTEX token auth via `vtex-auth` middleware on all requests
-- [ ] T050 [US2] Create `src/mcp/tools/get-product-feed-state.ts` — input schema from `specs/001-vtex-product-feed-mcp/contracts/mcp-tools.md`; query `feed-state.repository.getByKey`; compute `dataFreshness` by comparing `priceResolvedAt`, `stockResolvedAt`, `contentResolvedAt` against `channelConfig.dedupTtlSeconds`; return `404` error if no record found
-- [ ] T051 [US2] Register `getProductFeedState` tool in `src/mcp/server.ts`
-- [ ] T052 [US2] Wire MCP server startup into `src/index.ts`
+- [x] T049 [US2] Create `src/mcp/server.ts` — initialise `@modelcontextprotocol/sdk` MCP server with Streamable HTTP transport; bind to `MCP_PORT`; apply VTEX token auth via `vtex-auth` middleware on all requests
+- [x] T050 [US2] Create `src/mcp/tools/get-product-feed-state.ts` — input schema from `specs/001-vtex-product-feed-mcp/contracts/mcp-tools.md`; query `feed-state.repository.getByKey`; compute `dataFreshness` by comparing `priceResolvedAt`, `stockResolvedAt`, `contentResolvedAt` against `channelConfig.dedupTtlSeconds`; return `404` error if no record found
+- [x] T051 [US2] Register `getProductFeedState` tool in `src/mcp/server.ts`
+- [x] T052 [US2] Wire MCP server startup into `src/index.ts`
 
 ---
 
@@ -129,8 +129,8 @@
 
 **Independent test:** Seed 150 open `DISPATCH_ERROR` issues for `channelId: test-channel`; call `listProductFeedIssues` with `limit: 20` → `issues.length = 20`, `nextCursor` present; follow cursor → next 20 returned; `severity: "error"` filter excludes warnings; calling with `skuId` filter returns only that SKU's issues.
 
-- [ ] T053 [US3] Create `src/mcp/tools/list-product-feed-issues.ts` — input schema from `contracts/mcp-tools.md`; query GSI-1 via `offer-issue.repository.listByChannel` with optional `severity`+`issueType` SK prefix filter and `skuId` attribute filter; add `FilterExpression: #ttl > :now` guard; return cursor-based pagination via `nextCursor`
-- [ ] T054 [US3] Register `listProductFeedIssues` tool in `src/mcp/server.ts`
+- [x] T053 [US3] Create `src/mcp/tools/list-product-feed-issues.ts` — input schema from `contracts/mcp-tools.md`; query GSI-1 via `offer-issue.repository.listByChannel` with optional `severity`+`issueType` SK prefix filter and `skuId` attribute filter; add `FilterExpression: #ttl > :now` guard; return cursor-based pagination via `nextCursor`
+- [x] T054 [US3] Register `listProductFeedIssues` tool in `src/mcp/server.ts`
 
 ---
 
@@ -140,11 +140,11 @@
 
 **Independent test:** Process an event for a SKU whose VTEX category has no Mapping Cache entry → `FeedState.syncStatus` is not `synced`; `OfferIssue` with `issueType: MISSING_MAPPING` exists; POST a Mapper webhook delivery for that category → cache updated → re-queue triggered → SKU proceeds through pipeline.
 
-- [ ] T055 [P] [US6] Create `src/mapper/mapper-webhook.handler.ts` — receive `POST /internal/mapper/webhook/:channelId`; parse mapping payload (contract from `specs/001-vtex-product-feed-mcp/vtex-product-feed-mcp-platform-spec.md` Section 4.2); update `mapping-cache` for each `vtexCategoryId`; invalidate affected `FeedState` records; re-queue SKUs with open `MISSING_MAPPING` issues
-- [ ] T056 [US6] Create `src/mapper/mapper-webhook.router.ts` — `POST /internal/mapper/webhook/:channelId`; apply `vtex-auth` middleware
-- [ ] T057 [US6] Update `src/pipeline/step4-mapping.ts` — on cache miss, check for existing open `MISSING_MAPPING` issue; deduplicate issue creation (do not create duplicate open issues for same `(skuId, channelId)`)
-- [ ] T058 [US6] Create `src/mcp/tools/get-marketplace-mapping-status.ts` — input schema from `contracts/mcp-tools.md`; read from `mapping-cache`; return `mappingStatus`, `categoryMapping`, `attributeMapping[]`, `missingMappings[]`
-- [ ] T059 [US6] Register `getMarketplaceMappingStatus` tool in `src/mcp/server.ts`
+- [x] T055 [P] [US6] Create `src/mapper/mapper-webhook.handler.ts` — receive `POST /internal/mapper/webhook/:channelId`; parse mapping payload (contract from `specs/001-vtex-product-feed-mcp/vtex-product-feed-mcp-platform-spec.md` Section 4.2); update `mapping-cache` for each `vtexCategoryId`; invalidate affected `FeedState` records; re-queue SKUs with open `MISSING_MAPPING` issues
+- [x] T056 [US6] Create `src/mapper/mapper-webhook.router.ts` — `POST /internal/mapper/webhook/:channelId`; apply `vtex-auth` middleware
+- [x] T057 [US6] Update `src/pipeline/step4-mapping.ts` — on cache miss, check for existing open `MISSING_MAPPING` issue; deduplicate issue creation (do not create duplicate open issues for same `(skuId, channelId)`)
+- [x] T058 [US6] Create `src/mcp/tools/get-marketplace-mapping-status.ts` — input schema from `contracts/mcp-tools.md`; read from `mapping-cache`; return `mappingStatus`, `categoryMapping`, `attributeMapping[]`, `missingMappings[]`
+- [x] T059 [US6] Register `getMarketplaceMappingStatus` tool in `src/mcp/server.ts`
 - [ ] T060 [US6] Wire `mapper-webhook.router.ts` into `src/app.ts`
 
 ---
