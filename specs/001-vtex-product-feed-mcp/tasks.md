@@ -145,7 +145,7 @@
 - [x] T057 [US6] Update `src/pipeline/step4-mapping.ts` — on cache miss, check for existing open `MISSING_MAPPING` issue; deduplicate issue creation (do not create duplicate open issues for same `(skuId, channelId)`)
 - [x] T058 [US6] Create `src/mcp/tools/get-marketplace-mapping-status.ts` — input schema from `contracts/mcp-tools.md`; read from `mapping-cache`; return `mappingStatus`, `categoryMapping`, `attributeMapping[]`, `missingMappings[]`
 - [x] T059 [US6] Register `getMarketplaceMappingStatus` tool in `src/mcp/server.ts`
-- [ ] T060 [US6] Wire `mapper-webhook.router.ts` into `src/app.ts`
+- [x] T060 [US6] Wire `mapper-webhook.router.ts` into `src/app.ts`
 
 ---
 
@@ -155,8 +155,8 @@
 
 **Independent test:** For a SKU with `syncStatus: synced` and `isAvailable: false, unavailableReason: ZERO_STOCK` → response shows `inventoryEligibility.pass: false` with detail containing the minimum stock threshold value; `lastSimulationParams` populated with `country` and `postalCode`.
 
-- [ ] T061 [US1] Create `src/mcp/tools/explain-offer-availability.ts` — input schema from `contracts/mcp-tools.md`; query `FeedState`; build structured `breakdown` from stored eligibility fields; populate `lastSimulationParams` from `FeedState.simulationCountry` / `simulationPostalCode`; generate human-readable `detail` string for each eligibility check
-- [ ] T062 [US1] Register `explainOfferAvailability` tool in `src/mcp/server.ts`
+- [x] T061 [US1] Create `src/mcp/tools/explain-offer-availability.ts` — input schema from `contracts/mcp-tools.md`; query `FeedState`; build structured `breakdown` from stored eligibility fields; populate `lastSimulationParams` from `FeedState.simulationCountry` / `simulationPostalCode`; generate human-readable `detail` string for each eligibility check
+- [x] T062 [US1] Register `explainOfferAvailability` tool in `src/mcp/server.ts`
 
 ---
 
@@ -166,8 +166,8 @@
 
 **Independent test:** Call `retryFeedSync` for `(skuId, channelId)` → `enqueued: true`; call again within 60 seconds → `enqueued: false, reason: "rate_limited"`; call when sync is already `in_flight` → `enqueued: false, reason: "already_in_flight"`.
 
-- [ ] T063 [US7] Create `src/mcp/tools/retry-feed-sync.ts` — input schema from `contracts/mcp-tools.md`; enforce rate limit using Redis `SET NX` with 60s TTL on key `retry-rate:{accountName}:{channelId}:{skuId}`; check `FeedState.syncStatus` for `in_flight`; enqueue to appropriate SQS queue; return `enqueued`, `idempotencyKey`, `estimatedProcessingMs`, `reason`
-- [ ] T064 [US7] Register `retryFeedSync` tool in `src/mcp/server.ts`
+- [x] T063 [US7] Create `src/mcp/tools/retry-feed-sync.ts` — input schema from `contracts/mcp-tools.md`; enforce rate limit using Redis `SET NX` with 60s TTL on key `retry-rate:{accountName}:{channelId}:{skuId}`; check `FeedState.syncStatus` for `in_flight`; enqueue to appropriate SQS queue; return `enqueued`, `idempotencyKey`, `estimatedProcessingMs`, `reason`
+- [x] T064 [US7] Register `retryFeedSync` tool in `src/mcp/server.ts`
 
 ---
 
@@ -175,10 +175,10 @@
 
 **Goal:** Complete the full MCP tool surface area for cross-channel comparison and history.
 
-- [ ] T065 [P] Create `src/mcp/tools/compare-feed-state-across-channels.ts` — input schema from `contracts/mcp-tools.md`; query GSI-2 (`ACCT#{accountName}#SKU#{skuId}`) to get all active channel states; return `rows[]` with price, stock, availability, syncStatus, openIssueCount per channel
-- [ ] T066 [P] Create `src/mcp/tools/get-feed-sync-history.ts` — input schema from `contracts/mcp-tools.md`; query `SyncEvent` records from `sync-event.repository`; apply `since` ISO 8601 filter via SK range; cursor pagination
-- [ ] T067 [P] Create `src/mcp/tools/simulate-product-feed.ts` — run full pipeline steps 1–8 with optional `overrides` (country, postalCode, minimumStock) applied to a cloned channel config; never write to Feed State Store; always return `isHypothetical: true`
-- [ ] T068 Register `compareFeedStateAcrossChannels`, `getFeedSyncHistory`, `simulateProductFeed` tools in `src/mcp/server.ts`
+- [x] T065 [P] Create `src/mcp/tools/compare-feed-state-across-channels.ts` — input schema from `contracts/mcp-tools.md`; query GSI-2 (`ACCT#{accountName}#SKU#{skuId}`) to get all active channel states; return `rows[]` with price, stock, availability, syncStatus, openIssueCount per channel
+- [x] T066 [P] Create `src/mcp/tools/get-feed-sync-history.ts` — input schema from `contracts/mcp-tools.md`; query `SyncEvent` records from `sync-event.repository`; apply `since` ISO 8601 filter via SK range; cursor pagination
+- [x] T067 [P] Create `src/mcp/tools/simulate-product-feed.ts` — run full pipeline steps 1–8 with optional `overrides` (country, postalCode, minimumStock) applied to a cloned channel config; never write to Feed State Store; always return `isHypothetical: true`
+- [x] T068 Register `compareFeedStateAcrossChannels`, `getFeedSyncHistory`, `simulateProductFeed` tools in `src/mcp/server.ts`
 
 ---
 
@@ -186,18 +186,18 @@
 
 **Goal:** Health endpoints, structured logging, metrics, `StockAdjustmentHook`, graceful shutdown.
 
-- [ ] T069 Create `GET /health` endpoint in `src/app.ts` — return `{ status: "ok", uptime: N }` with `200`; used by load balancers and connector health checks
-- [ ] T070 [P] Create `src/observability/metrics.ts` — counters for `feed.sync.total`, `feed.sync.success`, `feed.sync.error`, `feed.sync.skipped`; histograms for `feed.simulation.latency_ms`, `feed.dispatch.latency_ms`; gauge for `feed.queue.depth` (spec FR-039)
-- [ ] T071 [P] Create `src/observability/logger.ts` — structured JSON logger (e.g. `pino`); include `accountName`, `channelId`, `skuId`, `traceId` in all pipeline log lines
-- [ ] T072 Create `src/pipeline/stock-adjustment-hook.ts` — if `channelConfig.stockAdjustmentHookEndpoint` present, call connector's `/config/stock-adjustment-hook` during Step 6; cap `adjustedStock` at `rawSimulatedStock`; validate response (spec FR-015)
-- [ ] T073 [P] Add `SIMULATION_ERROR` OfferIssue creation to `step5-price.ts` — after max retries exhausted on simulation API failure (spec FR-013 clarification)
-- [ ] T074 [P] Add `TTL guard` to all DynamoDB reads in `offer-issue.ts` and `sync-event.ts` — `FilterExpression: #ttl > :now` on queries that touch expiry-sensitive records
-- [ ] T075 Implement graceful shutdown in `src/index.ts` — on `SIGTERM`: stop accepting new SQS messages, drain in-flight pipeline tasks, close DynamoDB/Redis connections, exit `0`
-- [ ] T076 [P] Create `scripts/db-seed.ts` — seed one test `ChannelConfig`, one `FeedState` record, and 5 `OfferIssue` records for local dev and integration tests
-- [ ] T077 [P] Add `MCP-Session-Id` session management to `src/mcp/server.ts` — generate cryptographically secure session IDs at initialization; require in subsequent requests; include SSE event IDs for reconnection resumability
-- [ ] T078 Add `Origin` header validation to MCP server — reject requests with unexpected origins; bind to `localhost` in development (spec research.md Decision 1 security caveat)
-- [ ] T079 [P] Create `src/channels/channel-config.router.ts` health guard — `GET /channels/:channelId/health` proxies to `connector.dispatchEndpoint/health`; used by platform before dispatch
-- [ ] T080 Add `X-Platform-Signature` HMAC-SHA256 signing to `step9-dispatch.ts` — sign dispatch request body with connector secret; connector can verify authenticity (contract `connector-api.md`)
+- [x] T069 Create `GET /health` endpoint in `src/app.ts` — return `{ status: "ok", uptime: N }` with `200`; used by load balancers and connector health checks
+- [x] T070 [P] Create `src/observability/metrics.ts` — counters for `feed.sync.total`, `feed.sync.success`, `feed.sync.error`, `feed.sync.skipped`; histograms for `feed.simulation.latency_ms`, `feed.dispatch.latency_ms`; gauge for `feed.queue.depth` (spec FR-039)
+- [x] T071 [P] Create `src/observability/logger.ts` — structured JSON logger (e.g. `pino`); include `accountName`, `channelId`, `skuId`, `traceId` in all pipeline log lines
+- [x] T072 Create `src/pipeline/stock-adjustment-hook.ts` — if `channelConfig.stockAdjustmentHookEndpoint` present, call connector's `/config/stock-adjustment-hook` during Step 6; cap `adjustedStock` at `rawSimulatedStock`; validate response (spec FR-015)
+- [x] T073 [P] Add `SIMULATION_ERROR` OfferIssue creation to `step5-price.ts` — after max retries exhausted on simulation API failure (spec FR-013 clarification)
+- [x] T074 [P] Add `TTL guard` to all DynamoDB reads in `offer-issue.ts` and `sync-event.ts` — `FilterExpression: #ttl > :now` on queries that touch expiry-sensitive records
+- [x] T075 Implement graceful shutdown in `src/index.ts` — on `SIGTERM`: stop accepting new SQS messages, drain in-flight pipeline tasks, close DynamoDB/Redis connections, exit `0`
+- [x] T076 [P] Create `scripts/db-seed.ts` — seed one test `ChannelConfig`, one `FeedState` record, and 5 `OfferIssue` records for local dev and integration tests
+- [x] T077 [P] Add `MCP-Session-Id` session management to `src/mcp/server.ts` — generate cryptographically secure session IDs at initialization; require in subsequent requests; include SSE event IDs for reconnection resumability
+- [x] T078 Add `Origin` header validation to MCP server — reject requests with unexpected origins; bind to `localhost` in development (spec research.md Decision 1 security caveat)
+- [x] T079 [P] Create `src/channels/channel-config.router.ts` health guard — `GET /channels/:channelId/health` proxies to `connector.dispatchEndpoint/health`; used by platform before dispatch
+- [x] T080 Add `X-Platform-Signature` HMAC-SHA256 signing to `step9-dispatch.ts` — sign dispatch request body with connector secret; connector can verify authenticity (contract `connector-api.md`)
 
 ---
 

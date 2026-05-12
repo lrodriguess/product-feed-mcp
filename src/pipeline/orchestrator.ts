@@ -6,7 +6,7 @@ import { createIssue } from '../store/offer-issue';
 import { checkEligibility } from './step1-eligibility';
 import { enrichSku } from './step2-enrichment';
 import { normalizeSku } from './step3-normalization';
-import { resolveMapping } from './step4-mapping';
+import { resolveMapping, createMissingMappingIssueIfNeeded } from './step4-mapping';
 import { resolvePrice } from './step5-price';
 import { resolveInventory } from './step6-inventory';
 import { computeAvailability } from './step7-availability';
@@ -118,20 +118,24 @@ export async function runPipeline(message: QueueMessage): Promise<void> {
     });
   } catch (err) {
     if (err instanceof PipelineHaltError) {
-      // Create issue and stop — no retry
-      await createIssue({
-        issueId: uuidv4(),
-        accountName,
-        channelId,
-        skuId,
-        issueType: err.issueType,
-        severity: 'error',
-        description: err.message,
-        source: 'platform',
-        createdAt: new Date().toISOString(),
-        resolvedAt: null,
-        resolved: false,
-      });
+      // For MISSING_MAPPING: use dedup-aware issue creation
+      if (err.issueType === 'MISSING_MAPPING') {
+        await createMissingMappingIssueIfNeeded(accountName, channelId, skuId);
+      } else {
+        await createIssue({
+          issueId: uuidv4(),
+          accountName,
+          channelId,
+          skuId,
+          issueType: err.issueType,
+          severity: 'error',
+          description: err.message,
+          source: 'platform',
+          createdAt: new Date().toISOString(),
+          resolvedAt: null,
+          resolved: false,
+        });
+      }
       await updateSyncStatus(accountName, channelId, skuId, 'error', {
         lastError: err.message,
       });
@@ -144,6 +148,21 @@ export async function runPipeline(message: QueueMessage): Promise<void> {
       const maxRetries = channel.maxRetries ?? 5;
 
       if (retryCount >= maxRetries) {
+        // Create issue for the exhausted error type (T073: SIMULATION_ERROR on exhaustion)
+        const issueType = err.issueType ?? 'SYNC_EXHAUSTED';
+        await createIssue({
+          issueId: uuidv4(),
+          accountName,
+          channelId,
+          skuId,
+          issueType,
+          severity: 'error',
+          description: `Max retries (${maxRetries}) exhausted: ${err.message}`,
+          source: 'platform',
+          createdAt: new Date().toISOString(),
+          resolvedAt: null,
+          resolved: false,
+        });
         throw new MaxRetriesExhaustedError(`Max retries exhausted for SKU ${skuId}`);
       }
 

@@ -69,3 +69,35 @@ channelRouter.get('/', async (req: Request, res: Response) => {
   const configs = await listChannels(accountName);
   res.json(configs);
 });
+
+// GET /channels/:channelId/health — proxy to connector dispatchEndpoint/health (T079)
+channelRouter.get('/:channelId/health', async (req: Request, res: Response) => {
+  try {
+    const config = await getChannel(req.params.channelId);
+    const healthUrl = new URL('/health', config.dispatchEndpoint).toString();
+
+    let connectorRes: Response;
+    try {
+      connectorRes = await fetch(healthUrl, { method: 'GET', signal: AbortSignal.timeout(5000) });
+    } catch (fetchErr) {
+      return res.status(502).json({
+        channelId: config.channelId,
+        connectorStatus: 'unreachable',
+        error: (fetchErr as Error).message,
+      });
+    }
+
+    const body = await connectorRes.json().catch(() => null);
+    res.status(connectorRes.ok ? 200 : 502).json({
+      channelId: config.channelId,
+      connectorStatus: connectorRes.ok ? 'ok' : 'error',
+      httpStatus: connectorRes.status,
+      body,
+    });
+  } catch (err) {
+    if (err instanceof ChannelNotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
